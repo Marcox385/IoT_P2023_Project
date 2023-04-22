@@ -1,12 +1,10 @@
-import json
-import requests
-import sys, os
+import os
 from datetime import datetime
-from fastapi import APIRouter, Body, Request, Response, HTTPException, status
-from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI
 
+app = FastAPI()
 path_db = os.path.abspath("Watering_System/db")
-router = APIRouter()
+
 
 def create_register_file(plant_id, humidity, water_level):
     time_atm = datetime.now().date().strftime('%m-%d-%Y')
@@ -34,7 +32,7 @@ def create_plant_register(plant_id):
     print(f"Created [{path_db_plant}]")
     return True
 
-@router.get("/{plant_id}")
+@app.get("/{plant_id}")
 def get_plant_registers(plant_id):
     path_db_plant = path_db + f"/{plant_id}"
     if os.path.exists(path_db_plant):
@@ -43,12 +41,12 @@ def get_plant_registers(plant_id):
     else:
         return None
     
-@router.get("/{plant_id}/{filename}")
+@app.get("/{plant_id}/{filename}")
 def get_register_file(plant_id, filename):
     path_db_register = path_db + f"/{plant_id}/{filename}"
     if os.path.exists(path_db_register):
         with open(path_db_register, "r") as file:
-            return file.readlines()
+            return [i.rstrip("\n") for i in file.readlines()]
 
 
 # create_plant_register("test_plant")
