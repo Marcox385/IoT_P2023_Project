@@ -1,2 +1,6 @@
-*.zip
+*.cfg
 *.rar
+*.svd
+*.zip
+
+Firmware/**/*.json
