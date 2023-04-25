@@ -11,14 +11,14 @@ def on_connect(client, userdata, flags, rc):
         print("Connection failed")
 
 def on_message(client, userdata, message):
-    print("Message received: ", message.payload)
+    msg = str(message.payload.decode('ascii'))
+    msg = msg.split(" ")
+    print("Message received: ", msg)
 
-    msg = str(message.payload).decode('ascii')
-    msg.split()
-    print(msg)
-    plant_id = int(msg[0][1:-1])
-    humidity = int(msg[1][8:-2])
-    water_lvl = int(msg[2][11:-2])
+    plant_id = int(msg[0][1:])
+    humidity = int(msg[1][9:11])
+    water_lvl = int(msg[2][12:14])
+
     create_plant_register(plant_id)
     create_register_file(plant_id, humidity, water_lvl)
 
