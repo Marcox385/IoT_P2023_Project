@@ -1,10 +1,44 @@
 import os
+import time
 from datetime import datetime
 from fastapi import FastAPI
+import paho.mqtt.client as mqttClient
 
 app = FastAPI()
 path_db = os.path.abspath("Watering_System/db")
 
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to broker")
+        global Connected
+        Connected = True
+    else:
+        print("Connection failed")
+
+def on_message(client, userdata, message):
+    print("Message received: ", message.payload)
+
+    msg = str(message.payload)
+    msg.split("#")
+    print(msg)
+    #create_plant_register(msg[0])
+    #create_register_file(msg[0], msg[1], msg[2])
+
+Connected = False
+
+broker_address= "165.232.154.179"
+port = 1883
+user = "iot"
+password = "iot"
+
+client = mqttClient.Client("Python")
+client.username_pw_set(user, password=password)
+client.on_connect = on_connect
+client.on_message = on_message
+client.connect(broker_address, port, 60)
+client.subscribe("PlantStats")
+client.loop_forever()
 
 def create_register_file(plant_id, humidity, water_level):
     time_atm = datetime.now().date().strftime('%m-%d-%Y')
@@ -55,8 +89,7 @@ def get_register_file(plant_id, filename):
 # print(x)
 # print(get_register_file("test_plant", x[0]))
 
-# Mandar requests para WATER al sistema
 
-def send_water():
-    # os.system(mqtt)
-    pass
+def send_water(plant_id):
+    os.system(f"mosquitto_pub -h localhost -t WaterBroadcast -m '{plant_id}' -u iot -P iot")
+    print(f"MQTT message sent for watering {plant_id}")
