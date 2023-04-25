@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from fastapi import FastAPI
+import uvicorn
 
 app = FastAPI()
 
@@ -61,3 +62,6 @@ def get_register_file(plant_id, filename):
 def send_water(plant_id):
     os.system(f"mosquitto_pub -h localhost -t WaterBroadcast -m '{plant_id}' -u iot -P iot")
     print(f"MQTT message sent for watering {plant_id}")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=5000)

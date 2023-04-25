@@ -13,12 +13,14 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     print("Message received: ", message.payload)
 
-    msg = str(message.payload)
-    msg.split("#")
+    msg = str(message.payload).decode('ascii')
+    msg.split()
     print(msg)
-    
-    create_plant_register("test_plant")
-    create_register_file("test_plant", 40, 50)
+    plant_id = int(msg[0][1:-1])
+    humidity = int(msg[1][8:-2])
+    water_lvl = int(msg[2][11:-2])
+    create_plant_register(plant_id)
+    create_register_file(plant_id, humidity, water_lvl)
 
 Connected = False
 
