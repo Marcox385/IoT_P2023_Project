@@ -16,6 +16,8 @@ extern "C" {
 }
 #include <AsyncMqttClient.h>
 #include <NewPing.h>
+#include <SPIFFS.h>
+using namespace std;
 
 /* Constant definition */
 // Wi-Fi
@@ -39,6 +41,7 @@ extern "C" {
 #define TRIGGER_PIN 22
 #define ECHO_PIN 23
 #define MAX_DISTANCE 500
+#define US_SENSOR_SAMPLES 30
 
 // Humidity sensor
 #define WET_STATE 1600
@@ -51,8 +54,11 @@ extern "C" {
 
 // General
 #define BAUD_RATE 115200
+#define MANUAL_CONTROL 2
+#define FAIL_STATE 18
 
-bool out = true;
+bool out = true, init_success = false;
+char id_buf[20];
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 AsyncMqttClient mqttClient;
@@ -158,6 +164,50 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 void setup() {
   Serial.begin(BAUD_RATE);
 
+  pinMode(HUMIDITY_SENSOR_PIN, INPUT);
+  pinMode(MANUAL_CONTROL, INPUT);
+  pinMode(WATER_PUMP_PIN, OUTPUT);
+  pinMode(FAIL_STATE, OUTPUT);
+
+  digitalWrite(WATER_PUMP_PIN, 1); // Prevent relay activation at power-on
+
+  if(!SPIFFS.begin(true)){
+    Serial.println("Error occurred while mounting SPIFFS.\nUnable to read system ID.");
+    digitalWrite(FAIL_STATE, 1);
+    return;
+  }
+
+  File id_file = SPIFFS.open("/id_file.txt");
+  
+  if(!id_file){
+    Serial.println("Failed to open id file for reading.");
+    digitalWrite(FAIL_STATE, 1);
+    return;
+  }
+
+  try {
+//    id_file.read(id_buf, (uint8_t)id_file.available());
+//    Serial.print("File Content:");
+//    Serial.println(id_buf);
+//    id_file.close();
+
+    vector<String> v;
+    while (id_file.available()) {
+      v.push_back(id_file.readStringUntil('\n'));
+    }
+    id_file.close();
+
+    for (String s : v) {
+      Serial.println(s);
+    }
+  } catch (...) {
+    Serial.println("Error while reading id file.");
+    digitalWrite(FAIL_STATE, 1);
+    return;
+  }
+  
+  init_success = true;
+
   // mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMqtt));
   // wifiReconnectTimer = xTimerCreate("wifiTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToWifi));
 
@@ -179,18 +229,9 @@ void setup() {
   // mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   // mqttClient.setCredentials(MQTT_USERNAME_SUB, MQTT_PASSWORD_SUB);
   // connectToWifi();
-
-  pinMode(HUMIDITY_SENSOR_PIN, INPUT);
-  pinMode(WATER_PUMP_PIN, OUTPUT);
-
-  pinMode(2, INPUT);
-
-  digitalWrite(WATER_PUMP_PIN, 1);
 }
 
-void waterPump() {
-
-}
+void waterPump() { }
 
 void soilHumidityCapture() {
   unsigned long capture_avg = 0;
@@ -209,16 +250,17 @@ void soilHumidityCapture() {
 
 void waterLevelCapture() {
   // Take water level via ultrasonic sensor
-  // TODO: Implement predefined water container values
+  // TODO: Implement predefined water container values {24: empty, 22: minimum, 20: warning, 3: maximum}
+  // Values defined for test water container
 
   unsigned long capture_avg = 0;
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < US_SENSOR_SAMPLES; i++) {
     capture_avg += sonar.ping_cm();
     delay(75);
   }
   
-  capture_avg /= 20.0;
+  capture_avg /= (float)US_SENSOR_SAMPLES;
   Serial.println("Sonar sensor avg: " + String(capture_avg) + "cm");
 }
 
@@ -228,17 +270,19 @@ void test_publish(char* msg) {
 }
 
 void loop() {
-  // out = !out;
-  // digitalWrite(HUMIDITY_SENSOR_PIN, (out) ? 1 : 0);
-
-  // Serial.print("Value: ");
-  // Serial.println((out) ? 1 : 0);
-
-  // Serial.println("Sensor: " + String(analogRead(HUMIDITY_SENSOR_PIN)));
-  // waterLevelCapture();
-
+  if (init_success) {
+    // out = !out;
+    // digitalWrite(HUMIDITY_SENSOR_PIN, (out) ? 1 : 0);
   
-
-  delay(500);
-  digitalWrite(WATER_PUMP_PIN, (digitalRead(4) == 1) ? 0 : 1);
+    // Serial.print("Value: ");
+    // Serial.println((out) ? 1 : 0);
+  
+    // Serial.println("Sensor: " + String(analogRead(HUMIDITY_SENSOR_PIN)));
+    // waterLevelCapture();
+  
+    
+  
+    delay(500);
+    digitalWrite(WATER_PUMP_PIN, (digitalRead(MANUAL_CONTROL) == 1) ? 0 : 1);
+  }
 }
