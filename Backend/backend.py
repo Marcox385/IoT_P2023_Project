@@ -38,7 +38,7 @@ def create_plant_register(plant_id):
 def get_plant_registers(plant_id):
     path_db = os.path.abspath("Watering_System/db")
     path_db_plant = path_db + f"/{plant_id}"
-    headers = {"Access-Control-Allow-Origin": f"http://iotmadnessproject.hopto.org:5000/{plant_id}"}
+    headers = {"Access-Control-Allow-Origin": "*"}
     if os.path.exists(path_db_plant):
         return JSONResponse(content={"list": os.listdir(path_db_plant)}, headers=headers)
 
@@ -49,17 +49,11 @@ def get_plant_registers(plant_id):
 def get_register_file(plant_id, filename):
     path_db = os.path.abspath("Watering_System/db")
     path_db_register = path_db + f"/{plant_id}/{filename}"
-    headers = {"Access-Control-Allow-Origin": f"http://iotmadnessproject.hopto.org:5000/{plant_id}/{filename}"}
+    headers = {"Access-Control-Allow-Origin": "*"}
     if os.path.exists(path_db_register):
         with open(path_db_register, "r") as file:
             return JSONResponse(content={"list": [i.rstrip("\n") for i in file.readlines()]}, headers=headers)
 
-
-# create_plant_register("test_plant")
-# create_register_file("test_plant", 50, 75)
-# x = get_plant_registers("test_plant")
-# print(x)
-# print(get_register_file("test_plant", x[0]))
 
 
 def send_water(plant_id):
