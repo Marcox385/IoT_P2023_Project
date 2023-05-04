@@ -84,8 +84,8 @@ body {
 <div class="topnav">
   <a class="active">Watering System</a>
   <div class="search-container">
-    <form action="/action_page.php">
-      <input type="text" placeholder="Enter Plant ID" name="search">
+    <form action="" name="plantIDForm" onsubmit="showDiv()">
+      <input type="text" placeholder="Enter Plant ID" name="submit" id="plantIDFromUser">
       <button type="submit">Search</button>
     </form>
   </div>
@@ -97,5 +97,51 @@ body {
   <p>Enter your plant id to search the registers and have the option to water your plant remotely</p>
 </div>
 
+<div id="datesDropDownDiv" style="display: none">
+  <select id="datesDropDown">
+  </select>
+  <div id="flag-icon">
+  </div>
+</div>
+
 </body>
+<script>
+  function request_backend(){
+    const xhr = new XMLHttpRequest();
+    const plantID = document.getElementById('plantIDFromUser').value
+    const url = "http://iotmadnessproject.hopto.org:5000/" + plantID
+    var data;
+    xhr.onreadystatechange = function() {
+    if (xhr.readyState == XMLHttpRequest.DONE) {
+        data = xhr.response;
+    }
+}
+    xhr.open("GET", url, false);
+    xhr.send();
+    return JSON.parse(data);
+  }
+  function showDiv(){
+    var data = request_backend();
+    console.log(data);
+    event.preventDefault();
+    document.getElementById("datesDropDownDiv").style.display = "block";
+
+    const datesDropDown = document.getElementById("datesDropDown");
+    const flagIcon = document.getElementById("flag-icon");
+    datesDropDown.innerHTML = "";
+    for (let key in data.list) {
+      let option = document.createElement("option");
+      option.setAttribute('value', data.list[key]);
+
+      let optionText = document.createTextNode(data.list[key]);
+      option.appendChild(optionText);
+
+      datesDropDown.appendChild(option);
+    } 
+
+    datesDropDown.addEventListener("change", e => {
+      flagIcon.innerHTML = e.target.value;
+    })
+  }
+</script>
 </html>
