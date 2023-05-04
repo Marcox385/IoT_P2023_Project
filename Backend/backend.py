@@ -1,9 +1,11 @@
 import os
 from datetime import datetime
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 import uvicorn
 
 app = FastAPI()
+headers = {"Access-Control-Allow-Origin": "http://iotmadnessproject.hopto.org"}
 
 def create_register_file(plant_id, humidity, water_level):
     path_db = os.path.abspath("Watering_System/db")
@@ -38,10 +40,10 @@ def get_plant_registers(plant_id):
     path_db = os.path.abspath("Watering_System/db")
     path_db_plant = path_db + f"/{plant_id}"
     if os.path.exists(path_db_plant):
-        return os.listdir(path_db_plant)
+        return JSONResponse(content={"list": os.listdir(path_db_plant)} headers=headers)
 
     else:
-        return None
+        return JSONResponse(content={} headers=headers)
     
 @app.get("/{plant_id}/{filename}")
 def get_register_file(plant_id, filename):
@@ -49,7 +51,7 @@ def get_register_file(plant_id, filename):
     path_db_register = path_db + f"/{plant_id}/{filename}"
     if os.path.exists(path_db_register):
         with open(path_db_register, "r") as file:
-            return [i.rstrip("\n") for i in file.readlines()]
+            return JSONResponse(content={"list": [i.rstrip("\n") for i in file.readlines()]} headers=headers)
 
 
 # create_plant_register("test_plant")
