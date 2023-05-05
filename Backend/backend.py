@@ -35,6 +35,12 @@ def create_plant_register(plant_id):
     print(f"Created [{path_db_plant}]")
     return True
 
+@app.get("/water/{plant_id}")
+def send_water(plant_id):
+    os.system(f"mosquitto_pub -h localhost -t WaterBroadcast -m '{plant_id}' -u iot -P iot")
+    print(f"MQTT message sent for watering {plant_id}")
+    return JSONResponse(content={}, headers=headers)
+
 @app.get("/{plant_id}")
 def get_plant_registers(plant_id):
     path_db = os.path.abspath("/home/IoT_P2023_Project/Backend/Watering_System/db")
@@ -60,11 +66,5 @@ def get_register_file(plant_id, filename):
                 y.append({"humidity": x[0], "waterLevel": x[1]})
             return JSONResponse(content={"list": y}, headers=headers)
 
-
-
-def send_water(plant_id):
-    os.system(f"mosquitto_pub -h localhost -t WaterBroadcast -m '{plant_id}' -u iot -P iot")
-    print(f"MQTT message sent for watering {plant_id}")
-
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=5000, ssl_certfile="/etc/letsencrypt/live/iotmadnessproject.hopto.org/fullchain.pem", ssl_keyfile="/etc/letsencrypt/live/iotmadnessproject.hopto.org/privkey.pem")
