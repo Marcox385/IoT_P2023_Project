@@ -107,6 +107,10 @@
   </div>
 
   <div id="datesDropDownDiv" style="display: none; text-align:center">
+    <form action="" name="sendWaterButton" onsubmit="sendWater()">
+      <button type="submit">Water Plant&nbsp;</button>
+    </form>
+    <hr>
     <select id="datesDropDown" style="text-align:center">
     </select>
     <p>&nbsp;&nbsp;</p>
@@ -205,6 +209,14 @@
       document.body.appendChild(generateTable(document.getElementById('plantIDFromUser').value, e.target.value));
     })
   }
+
+  function sendWater() {
+    var plantID = document.getElementById('plantIDFromUser').value;
+    var data = request_backend(`water/${plantID}`);
+    alert(`Successfully watered ${plantID}`);
+    showDiv();
+  }
+
 </script>
 
 </html>
