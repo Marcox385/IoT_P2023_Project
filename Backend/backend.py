@@ -53,7 +53,12 @@ def get_register_file(plant_id, filename):
 
     if os.path.exists(path_db_register):
         with open(path_db_register, "r") as file:
-            return JSONResponse(content={"list": [i.rstrip("\n") for i in file.readlines()]}, headers=headers)
+            content = [i.rstrip("\n") for i in file.readlines()]
+            y = []
+            for i in content:
+                x = i.split(", ")
+                y.append({"humidity": x[0], "waterLevel": x[1]})
+            return JSONResponse(content={"list": y}, headers=headers)
 
 
 
