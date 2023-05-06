@@ -7,7 +7,7 @@ import uvicorn
 app = FastAPI()
 headers = {"Access-Control-Allow-Origin": "*"}
 
-def create_register_file(plant_id, humidity, water_level):
+def create_register_file(plant_id, humidity, humidity_desc, water_lvl, water_lvl_desc):
     path_db = os.path.abspath("/home/IoT_P2023_Project/Backend/Watering_System/db")
     time_atm = datetime.now().date().strftime('%m-%d-%Y')
     path_db_plant = path_db + f"/{plant_id}/"
@@ -15,11 +15,11 @@ def create_register_file(plant_id, humidity, water_level):
 
     if os.path.exists(path_db_register):
         with open(path_db_register, "a+") as file:
-            file.write(f"\n{humidity}, {water_level}")
+            file.write(f"\n{humidity}, {humidity_desc}, {water_lvl}, {water_lvl_desc}")
             print(f"Appended to file in path [{path_db_register}]")
     else:
         with open(path_db_register, "w+") as file:
-            file.write(f"{humidity}, {water_level}")
+            file.write(f"{humidity}, {humidity_desc}, {water_lvl}, {water_lvl_desc}")
             print(f"File created in path [{path_db_register}]")
 
 
@@ -63,7 +63,7 @@ def get_register_file(plant_id, filename):
             y = []
             for i in content:
                 x = i.split(", ")
-                y.append({"humidity": x[0], "waterLevel": x[1]})
+                y.append({"humidity": x[0], "humidityStatus": x[1], "waterLevel": x[2], "waterLevelStatus": x[3]})
             return JSONResponse(content={"list": y}, headers=headers)
 
 if __name__ == "__main__":
