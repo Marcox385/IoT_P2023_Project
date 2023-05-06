@@ -15,21 +15,24 @@ def on_message(client, userdata, message):
     msg = msg.split(" ")
     print("Message received: ", msg)
 
-    plant_id = msg[2]
-    percentage_index = msg[0].find("%")
-    humidity = int(msg[0][9:percentage_index])
-    percentage_index = msg[1].find("%")
-    water_lvl = int(msg[1][12:percentage_index])
+    try:
+        plant_id = msg[2]
+        percentage_index = msg[0].find("%")
+        humidity = int(msg[0][9:percentage_index])
+        percentage_index = msg[1].find("%")
+        water_lvl = int(msg[1][12:percentage_index])
 
-    parenthesis_index_start = msg[0].find("(")
-    parenthesis_index_end = msg[0].find(")")
-    humidity_desc = msg[0][parenthesis_index_start + 1:parenthesis_index_end]
-    parenthesis_index_start = msg[1].find("(")
-    parenthesis_index_end = msg[1].find(")")
-    water_lvl_desc = msg[1][parenthesis_index_start + 1:parenthesis_index_end]
-
-    create_plant_register(plant_id)
-    create_register_file(plant_id, humidity, humidity_desc, water_lvl, water_lvl_desc)
+        parenthesis_index_start = msg[0].find("(")
+        parenthesis_index_end = msg[0].find(")")
+        humidity_desc = msg[0][parenthesis_index_start + 1:parenthesis_index_end]
+        parenthesis_index_start = msg[1].find("(")
+        parenthesis_index_end = msg[1].find(")")
+        water_lvl_desc = msg[1][parenthesis_index_start + 1:parenthesis_index_end]
+    except Exception as e:
+        pass
+    else:
+        create_plant_register(plant_id)
+        create_register_file(plant_id, humidity, humidity_desc, water_lvl, water_lvl_desc)
 
 Connected = False
 
