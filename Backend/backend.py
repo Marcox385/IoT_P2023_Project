@@ -5,10 +5,10 @@ from fastapi.responses import JSONResponse
 import uvicorn
 
 app = FastAPI()
-headers = {"Access-Control-Allow-Origin": "http://iotmadnessproject.hopto.org"}
+headers = {"Access-Control-Allow-Origin": "*"}
 
 def create_register_file(plant_id, humidity, water_level):
-    path_db = os.path.abspath("Watering_System/db")
+    path_db = os.path.abspath("/home/IoT_P2023_Project/Backend/Watering_System/db")
     time_atm = datetime.now().date().strftime('%m-%d-%Y')
     path_db_plant = path_db + f"/{plant_id}/"
     path_db_register = path_db_plant + f"{time_atm}.txt"
@@ -24,7 +24,7 @@ def create_register_file(plant_id, humidity, water_level):
 
 
 def create_plant_register(plant_id):
-    path_db = os.path.abspath("Watering_System/db")
+    path_db = os.path.abspath("/home/IoT_P2023_Project/Backend/Watering_System/db")
     path_db_plant = path_db + f"/{plant_id}/"
 
     if os.path.exists(path_db_plant):
@@ -35,35 +35,36 @@ def create_plant_register(plant_id):
     print(f"Created [{path_db_plant}]")
     return True
 
-@app.get("/{plant_id}")
-def get_plant_registers(plant_id):
-    path_db = os.path.abspath("Watering_System/db")
-    path_db_plant = path_db + f"/{plant_id}"
-    if os.path.exists(path_db_plant):
-        return JSONResponse(content={"list": os.listdir(path_db_plant)} headers=headers)
-
-    else:
-        return JSONResponse(content={} headers=headers)
-    
-@app.get("/{plant_id}/{filename}")
-def get_register_file(plant_id, filename):
-    path_db = os.path.abspath("Watering_System/db")
-    path_db_register = path_db + f"/{plant_id}/{filename}"
-    if os.path.exists(path_db_register):
-        with open(path_db_register, "r") as file:
-            return JSONResponse(content={"list": [i.rstrip("\n") for i in file.readlines()]} headers=headers)
-
-
-# create_plant_register("test_plant")
-# create_register_file("test_plant", 50, 75)
-# x = get_plant_registers("test_plant")
-# print(x)
-# print(get_register_file("test_plant", x[0]))
-
-
+@app.get("/water/{plant_id}")
 def send_water(plant_id):
     os.system(f"mosquitto_pub -h localhost -t WaterBroadcast -m '{plant_id}' -u iot -P iot")
     print(f"MQTT message sent for watering {plant_id}")
+    return JSONResponse(content={}, headers=headers)
+
+@app.get("/{plant_id}")
+def get_plant_registers(plant_id):
+    path_db = os.path.abspath("/home/IoT_P2023_Project/Backend/Watering_System/db")
+    path_db_plant = path_db + f"/{plant_id}"
+    
+    if os.path.exists(path_db_plant):
+        return JSONResponse(content={"list": os.listdir(path_db_plant)}, headers=headers)
+
+    else:
+        return JSONResponse(content={}, headers=headers)
+    
+@app.get("/{plant_id}/{filename}")
+def get_register_file(plant_id, filename):
+    path_db = os.path.abspath("/home/IoT_P2023_Project/Backend/Watering_System/db")
+    path_db_register = path_db + f"/{plant_id}/{filename}"
+
+    if os.path.exists(path_db_register):
+        with open(path_db_register, "r") as file:
+            content = [i.rstrip("\n") for i in file.readlines()]
+            y = []
+            for i in content:
+                x = i.split(", ")
+                y.append({"humidity": x[0], "waterLevel": x[1]})
+            return JSONResponse(content={"list": y}, headers=headers)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=5000, ssl_certfile="/etc/letsencrypt/live/iotmadnessproject.hopto.org/fullchain.pem", ssl_keyfile="/etc/letsencrypt/live/iotmadnessproject.hopto.org/privkey.pem")

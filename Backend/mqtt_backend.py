@@ -15,7 +15,7 @@ def on_message(client, userdata, message):
     msg = msg.split(" ")
     print("Message received: ", msg)
 
-    plant_id = int(msg[0][1:])
+    plant_id = msg[0][1:]
     humidity = int(msg[1][9:11])
     water_lvl = int(msg[2][12:14])
 
