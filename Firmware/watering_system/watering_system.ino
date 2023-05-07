@@ -258,10 +258,7 @@ void status_report() {
   soil_capture = map(soil_capture, DRY_STATE, WATERING_STATE, 0, 100);
   water_capture = map(water_capture, WL_MINIMUM, WL_MAXIMUM, 0, 100);
 
-  Serial.println(soil_capture);
-  Serial.println(raw_soil);
-  Serial.println(water_capture);
-  Serial.println(raw_water);
+  if (soil_capture > 100) soil_capture = 100;
 
   if (raw_soil >= WATERING_STATE) {
     soil_stat = "Watering";
