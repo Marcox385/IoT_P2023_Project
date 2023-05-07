@@ -149,7 +149,7 @@
       let headRow = document.createElement('tr');
       headRow.style.backgroundColor = "lightgrey";
       headRow.style.color = "white";
-      ['Humidity', 'Water Level'].forEach(function (el) {
+      ['Humidity %', 'Humidity Status', 'Water Level %', 'Water Level Status'].forEach(function (el) {
         let th = document.createElement('th');
         th.style.border = "1px solid black";
         th.style.padding = "10px";
@@ -160,7 +160,7 @@
       table.appendChild(thead);
       data.forEach(function (el) {
         let tr = document.createElement('tr');
-        ['humidity', 'waterLevel'].forEach(function (prop) {
+        ['humidity', 'humidityStatus', 'waterLevel', 'waterLevelStatus'].forEach(function (prop) {
           let td = document.createElement('td');
           td.style.border = "1px solid black";
           td.style.padding = "10px";
