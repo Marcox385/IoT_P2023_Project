@@ -45,9 +45,9 @@ using namespace std;
 #define WL_EMPTY 24
 
 // Humidity sensor
-#define WATERING_STATE 200
-#define WET_STATE 110
-#define DRY_STATE 70
+#define WATERING_STATE 350
+#define WET_STATE 300
+#define DRY_STATE 250
 #define SH_SENSOR_SAMPLES 20
 #define HUMIDITY_SENSOR_PIN 34
 
@@ -253,29 +253,32 @@ void initSystem() {
 void status_report() {
   String soil_stat, water_stat;
   unsigned long soil_capture = soilHumidityCapture(), water_capture = waterLevelCapture();
+  unsigned long raw_soil = soil_capture, raw_water = water_capture;
 
-  if (soil_capture > WATERING_STATE + 100) soil_capture = WATERING_STATE + 100;
+  soil_capture = map(soil_capture, DRY_STATE, WATERING_STATE, 0, 100);
+  water_capture = map(water_capture, WL_MINIMUM, WL_MAXIMUM, 0, 100);
 
-  soil_capture = map(soil_capture, DRY_STATE, WATERING_STATE + 100, 0, 100);
-  water_capture = map(water_capture, WL_EMPTY, WL_MAXIMUM, 0, 100);
+  if (soil_capture > 100) soil_capture = 100;
 
-  if (soil_capture >= WATERING_STATE) {
-    soil_stat = "Dry";
-  } else if (soil_capture < WATERING_STATE && soil_capture >= WET_STATE) {
-    soil_stat = "Wet";
-  } else if (soil_capture < WET_STATE && soil_capture >= DRY_STATE) {
+  if (raw_soil >= WATERING_STATE) {
     soil_stat = "Watering";
+  } else if (raw_soil < (WATERING_STATE-30) && raw_soil >= (WET_STATE-25)) {
+    soil_stat = "Optimal";
+  } else if (raw_soil < (DRY_STATE-25)) {
+    soil_stat = "Dry";
   }
 
-  if (water_capture >= WL_EMPTY) {
-    water_stat = "Maximum";
-  } else if (water_capture < WL_EMPTY && water_capture >= WL_MINIMUM) {
-    water_stat = "Warning";
-  } else if (water_capture < WL_MINIMUM && water_capture >= WL_WARNING) {
-    water_stat = "Minimum";
-  } else if (water_capture < WL_WARNING && water_capture >= WL_MAXIMUM) {
+  if (raw_water >= WL_EMPTY) {
     water_stat = "Empty";
-  }
+  } else if (raw_water < WL_EMPTY && raw_water >= WL_MINIMUM) {
+    water_stat = "Minimum";
+  } else if (raw_water < WL_MINIMUM && raw_water >= WL_WARNING) {
+    water_stat = "Warning";
+  } else if (raw_water < WL_WARNING && raw_water > WL_MAXIMUM) {
+    water_stat = "Optimal";
+  } else if (raw_water <= WL_MAXIMUM) {
+    water_stat = "Maximum";
+  } else water_stat = "UNKNOWN STATE";
 
   String report_msg = "HUMIDITY:" + String(soil_capture) + "%(" + soil_stat + ") WATER_LEVEL:" + String(water_capture) + "%(" + water_stat +")" + " " + id_buf[0];
   uint16_t status_holder = mqttClient.publish(MQTT_STATS_TOPIC_PUB, 1, true, String(report_msg).c_str());
