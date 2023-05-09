@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title> AWS - IoT Project </title>
+		<link rel="icon" type="image/x-icon" href="./images/page_icon.ico">
+		<link rel="stylesheet" href="./styles/styles.css">
+		<script src="./scripts/watering_utils.js" defer></script>
+	</head>
+
+	<body>
+		<div class="topnav">
+			<a class="active">Automatic Watering System</a>
+			<div class="search-container">
+				<form action="" name="plantIDForm" onsubmit="showDiv()">
+					<input type="text" placeholder="Enter Plant ID" name="submit" id="plantIDFromUser">
+					<button type="submit">Search</button>
+				</form>
+			</div>
+		</div>
+
+		<div style="padding-left:16px">
+			<h2>IoT Project</h2>
+			<p>This will water the plant based on the dirt conditions that are being actively detected by the humidity sensors.
+			</p>
+			<p>Enter your Plant ID to search the registers and have the option to water your plant remotely!</p>
+		</div>
+
+		<div id="datesDropDownDiv" style="display: none; text-align:center">
+			<form action="" name="sendWaterButton" onsubmit="sendWater()">
+				<button type="submit">Water Plant&nbsp;</button>
+			</form>
+			<hr>
+			<select id="datesDropDown" style="text-align:center">
+			</select>
+			<p>&nbsp;&nbsp;</p>
+			<div id="dateData">
+			</div>
+		</div>
+	</body>
+</html>
+

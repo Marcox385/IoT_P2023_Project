@@ -16,7 +16,7 @@ def on_message(client, userdata, message):
     print("Message received: ", msg)
 
     try:
-        plant_id = msg[2]
+        plant_id = msg[2].strip()
         percentage_index = msg[0].find("%")
         humidity = int(msg[0][9:percentage_index])
         percentage_index = msg[1].find("%")
